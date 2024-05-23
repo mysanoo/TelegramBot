@@ -2,7 +2,6 @@ package com.example.EnasiniEmsin.entity.enums;
 
 public enum UserStep {
     NEW,
-    START,
-    ANSWER,
-    QUESTION
+    RESPOND, //javob
+    QUERY; //savol
 }

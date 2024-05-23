@@ -1,9 +1,7 @@
 package com.example.EnasiniEmsin.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.example.EnasiniEmsin.entity.enums.Level;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,5 +21,8 @@ public class Word {
     private String word;
 
     private String translation;
+
+    @Enumerated(EnumType.STRING)
+    private Level level;
 
 }

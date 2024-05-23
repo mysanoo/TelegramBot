@@ -4,5 +4,8 @@ public enum CallBackData {
     FIRST,
     SECOND,
     THIRD,
-    ANSWER
+    ANSWER,
+    YES,
+    NO;
+
 }

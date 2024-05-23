@@ -17,7 +17,7 @@ public class WordService {
         return wordRepo.findAll();
     }
 
-    public Word addWord(Word word){
-        return wordRepo.save(word);
+    public void addWord(Word word){
+        wordRepo.save(word);
     }
 }

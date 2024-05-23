@@ -1,18 +1,19 @@
 package com.example.EnasiniEmsin.service;
 
 import com.example.EnasiniEmsin.entity.User;
+import com.example.EnasiniEmsin.entity.Word;
 import com.example.EnasiniEmsin.entity.enums.UserStep;
 import com.example.EnasiniEmsin.repo.UserRepo;
-import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Getter
@@ -28,6 +29,10 @@ public class UserService {
                 .step(UserStep.NEW)
                 .telegramId(update.getMessage().getChatId())
                 .username(update.getMessage().getFrom().getFirstName())
+                .userWordList(new ArrayList<>())
+                .countCorrectAnswer(0)
+                .countIncorrectAnswer(0)
+                .countQuestion(20)
                 .build();
         userRepo.save(user);
         return user;
@@ -36,4 +41,33 @@ public class UserService {
     public List<User> allUsers(){
         return userRepo.findAll();
     }
+
+    public User findUserByTelegramID(Long telegramID){
+
+        Optional<User> user = allUsers().parallelStream()
+                .filter(user1 -> user1.getTelegramId().equals(telegramID))
+                .findFirst();
+        assert user.isPresent();
+        return user.get();
+    }
+
+    public void changeUserStep(User user, UserStep userStep){
+        user.setStep(userStep);
+        userRepo.save(user);
+    }
+    public void changeCorrectAnswer(User user, Word word){
+        user.setWord(word);
+        userRepo.save(user);
+    }
+
+    public void updateUser(User user){
+        userRepo.save(user);
+    }
+
+//    public void addWordToWordList(User user, Word word){
+//        List<Word> wordList = user.getUserWordList();
+//        wordList.add(word);
+//        user.setUserWordList(wordList);
+//        userRepo.save(user);
+//    }
 }
