@@ -1,13 +1,16 @@
 package com.example.EnasiniEmsin.telegram;
 
 
+import com.example.EnasiniEmsin.dto.RequestDto;
 import com.example.EnasiniEmsin.entity.Question;
 import com.example.EnasiniEmsin.entity.User;
+import com.example.EnasiniEmsin.entity.UserWord;
 import com.example.EnasiniEmsin.entity.Word;
 import com.example.EnasiniEmsin.entity.enums.CallBackData;
 import com.example.EnasiniEmsin.entity.enums.UserStep;
 import com.example.EnasiniEmsin.service.QuestionService;
 import com.example.EnasiniEmsin.service.UserService;
+import com.example.EnasiniEmsin.service.UserWordService;
 import com.example.EnasiniEmsin.service.WordService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +39,8 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Autowired
     private  UserService userService;
+
+    private final UserWordService userWordService;
 
     @Autowired
     public WordService wordService;
@@ -66,64 +71,52 @@ public class TelegramBot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         if (update.hasMessage()) {
             User user = secureUser(update);
+            System.out.println(user);
             Message message = update.getMessage();
-//            User user = userService.findUserByTelegramID(message.getChatId());
 
-            System.out.println(questionService.createQuestion());
-            if(message.getText().equals("/start")){
-                game(user);
+
+            switch(message.getText()){
+                case "/list" -> {
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String text;
+
+                    for (int i = 0; i < user.getUserVocabulary().size(); i++) {
+                        text = "\n" + (i + 1) + "."
+                                +  user.getUserVocabulary().get(i).getWord() + " - "
+                                + user.getUserVocabulary().get(i).getTranslation();
+                        stringBuilder.append(text);
+                    }
+                    if(stringBuilder.isEmpty()){
+                        sendMessage(user.getTelegramId(), "Hech nima qo'shilmagan!");
+                    }else sendMessage(user.getTelegramId(), stringBuilder.toString());
+                }
+                case "/new" -> {
+                    String text = "qo'shmoqchi bo'lgan so'zingizning tarjimasi bilan shu holatda jo'nating : \n" +
+                            "/add book - kitob \n" +
+                            "boshidagi '/add' bilan '-' ga e'tibor bering!";
+                    sendMessage(user.getTelegramId(),text);
+                    user.setStep(UserStep.ADD_WORD);
+                }
+                case "/start" -> {
+                    sendMessage(user.getTelegramId(), "salom");
+                    break;
+                }
+                case "/delete" -> {
+                    String text = "O'chirmoqchi bo'lgan so'zingizni quyidagi tarzda jo'nating : " +
+                            "'/delete book'";
+                    sendMessage(user.getTelegramId(), text);
+                }
             }
+
+            RequestDto delete = userWordService.deleteWord(message.getText(), user);
+            if(delete != null){
+                sendMessage(user.getTelegramId(), delete.getMessage());
+            }
+
+            userWordService.saveWord(user, message.getText());
 
         }
         if(update.hasCallbackQuery()){
-            System.out.println(update.getCallbackQuery());
-            String callBack = update.getCallbackQuery().getData();
-            Long chatID = update.getCallbackQuery().getFrom().getId();
-            User user = userService.findUserByTelegramID(chatID);
-            Message message = (Message) update.getCallbackQuery().getMessage();
-
-            if(user.getStep() == UserStep.QUERY){
-                if(callBack.equals(CallBackData.YES.toString())){
-                    game(user);
-                }else {
-                    sendMessage(chatID, "o'ynaysan naxxuy");
-                    game(user);
-                }
-            }
-
-            if(user.getStep() == UserStep.RESPOND){
-                switch (callBack){
-                    case ("ANSWER"): {
-                        user.setCountCorrectAnswer(user.getCountCorrectAnswer() + 1);
-                        sendMessage(chatID, "To'g'ri");
-                        game(user);
-                        break;
-                    }default : {
-                        List<Word> list = user.getUserWordList();
-                        list.add(user.getWord());
-                        user.setCountIncorrectAnswer(user.getCountIncorrectAnswer() + 1);
-                        user.setUserWordList(list);
-                        sendMessage(chatID, "Noto'g'ri!\n" +
-                                "To'g'ri javob : " + user.getWord().getWord());
-                        game(user);
-                        break;
-                    }
-                }
-                if(user.getCountQuestion() == 0){
-                    sendMessage(chatID, "To'g'ri topilgan so'zlar soni : " + user.getCountCorrectAnswer()
-                            + "\nTopolmagan so'zlar soni : " + user.getCountIncorrectAnswer());
-                    sendMessage(chatID, "Topa olmagan so'zlar ro'yhati : " + user.getUserWordList());
-                    user.setCountQuestion(19);
-                    user.setCountCorrectAnswer(0);
-                    user.setCountIncorrectAnswer(0);
-                    user.setUserWordList(new ArrayList<>());
-                    sendQuery(user);
-                }else {
-                    user.setCountQuestion(user.getCountQuestion()-1);
-                }
-                userService.updateUser(user);
-            }
-            deleteMessage(chatID, message.getMessageId());
 
         }
     }
@@ -246,24 +239,5 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
         return false;
     }
-
-
-
-
-
-//    public static List<InlineKeyboardButton> getRandomElements(List<InlineKeyboardButton> buttons) {
-//        List<InlineKeyboardButton> randomElements = new ArrayList<>();
-//        Random rand = new Random();
-//
-//        for (int i = 0; i < 4; i++) {
-//            int randomIndex = rand.nextInt(buttons.size());
-//            InlineKeyboardButton element = buttons.get(randomIndex);
-//            randomElements.add(element);
-//            buttons.remove(randomIndex); // Optional: To avoid duplicate selections if elements are non-unique
-//        }
-//
-//        return randomElements;
-//    }
-
 
 }

@@ -1,11 +1,11 @@
 package com.example.EnasiniEmsin.repo;
 
-import com.example.EnasiniEmsin.entity.User;
+import com.example.EnasiniEmsin.entity.UserWord;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.UUID;
-
 @Repository
-public interface UserRepo extends JpaRepository<User, Long> {
+public interface UserWordRepo extends JpaRepository<UserWord, Long> {
+
+
 }

@@ -11,9 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Getter
@@ -27,6 +25,7 @@ public class UserService {
     public User addUser(Update update){
         User user = User.builder()
                 .step(UserStep.NEW)
+                .userVocabulary(new ArrayList<>())
                 .telegramId(update.getMessage().getChatId())
                 .username(update.getMessage().getFrom().getFirstName())
                 .userWordList(new ArrayList<>())

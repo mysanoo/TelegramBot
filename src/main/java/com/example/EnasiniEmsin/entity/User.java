@@ -10,22 +10,30 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Entity
-@Table(name = "telegramUser")
+@Table(name = "users")
 @Builder
 public class User {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private Long telegramId;
 
     private String username;
 
     @Enumerated(EnumType.STRING)
     private UserStep step;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    private List<UserWord> userVocabulary;
 
     @ManyToOne
     private Word word;
